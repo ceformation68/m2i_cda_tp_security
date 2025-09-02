@@ -1,6 +1,10 @@
 <?php
     // Charger la configuration
-    require_once('config/config.php');
+    //require_once('config/config.php');
+
+    // Charger les variables d'environnement depuis le fichier .env
+    require_once('config/load_env.php');
+    loadEnv(__DIR__.'/.env');
 
 	$strPage = $_GET['page']??'content';
 	if (!file_exists("pages/".$strPage.".php")){
