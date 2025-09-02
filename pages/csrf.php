@@ -13,25 +13,67 @@
 	<?php
 		include("_partial/desc.php");
 		include("connect.php");
-		if (isset($_GET['password_new'])){
-			if ($_GET['password_new'] == ''){
-				echo "Vous devez renseigner un mot de passe";
-			}else if ($_GET['password_new'] != $_GET['password_conf']){
-				echo "Le mot de passe et sa confirmation ne correspondent pas";
+        // Token CSRF en session
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        // Changement de mot de passe
+		if (isset($_POST['password_new'])){
+			if ($_POST['password_new'] == ''){
+                $strError = "Vous devez renseigner un mot de passe";
+			}else if ($_POST['password_new'] != $_POST['password_conf']){
+                $strError = "Le mot de passe et sa confirmation ne correspondent pas";
 			}else{
-				$db->exec("UPDATE users SET password = '".$_GET['password_new']."' WHERE id = 1");
+                $boolOk = true;
+                // Vérification du token CSRF
+                if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+                    $boolOk = false;
+                }else{
+                    // Vérification du mot de passe actuel
+                    $stmt = $db->prepare("SELECT password FROM users WHERE id = 1");
+                    $stmt->execute();
+                    $row = $stmt->fetch();
+                    if (!password_verify($_POST['password_old'], $row['password'])) {
+                        $boolOk = false;
+                    }else {
+                        // Changement du mot de passe
+                        //$db->exec("UPDATE users SET password = '".$_GET['password_new']."' WHERE id = 1");
+                        // Changement du mot de passe avec requête préparée + hashage
+                        $stmt = $db->prepare("UPDATE users SET password = :password WHERE id = 1");
+                        $hashedPassword = password_hash($_POST['password_new'], PASSWORD_DEFAULT);
+                        $stmt->bindParam(':password', $hashedPassword);
+                        $stmt->execute();
+                        // Message pour l'utilisateur
+                        $strMessage = "Mot de passe changé avec succès !";
+                    }
+                }
+                if (!$boolOk){
+                    $strError = "Erreur veuillez réessayer.";
+                }
 			}
 		}
-	?>
-	<form action="#" method="GET" >
+        if (isset($strError)){
+            echo '<div class="alert alert-danger" role="alert">'.$strError.'</div>';
+        }
+        if (isset($strMessage)){
+            echo '<div class="alert alert-success" role="alert">'.$strMessage.'</div>';
+        }
+    ?>
+	<form action="#" method="post" >
 		<input type="hidden" name="page" value="csrf">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+        <p>
+            <label for="oldpass">Mot de passe actuel:</label>
+            <input id="oldpass" class="form-control" type="password" name="password_old">
+        </p>
+        <p>
+            <label for="pass">Nouveau mot de passe :</label>
+            <input id="pass" class="form-control" type="password" name="password_new">
+        </p>
 		<p>
-			<label>Nouveau mot de passe :</label>
-			<input class="form-control" type="password" name="password_new">
-		</p>
-		<p>
-			<label>Confirmer le mot de passe :</label>
-			<input class="form-control" type="password" name="password_conf" >
+			<label for="passconf">Confirmer le mot de passe :</label>
+			<input id="passconf" class="form-control" type="password" name="password_conf" >
 		</p>
 		<p>
 			<input class="form-control btn btn-primary" type="submit" value="changer">

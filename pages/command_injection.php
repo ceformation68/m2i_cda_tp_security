@@ -25,22 +25,37 @@
 	</div>
 	
 <?php
-	if( isset( $_POST[ 'ip' ] ) &&  $_POST[ 'ip' ] != "") {
-		// Get input
-		$target = $_REQUEST[ 'ip' ];
+    // Récupération de l'IP
+    $strIp = $_POST['ip'] ?? "";
 
-		// Determine OS and execute the ping command.
-		if( stristr( php_uname( 's' ), 'Windows NT' ) ) {
-			// Windows
-			$cmd = shell_exec( 'ping  ' . $target );
-		}
-		else {
-			// *nix
-			$cmd = shell_exec( 'ping  -c 4 ' . $target );
-		}
+    // Assaisnissement
+    $strIp = str_replace( array( "&", ";", "|", "`", "$", ">", "<", "(", ")", "{", "}", "[", "]", "'", "\"", "\\", "!" ), "", $strIp );
 
-		// Feedback for the end user
-		echo "<pre>".$cmd."</pre>";
+	if( isset( $strIp ) &&  $strIp != "") {
+        // Traitement IP
+        $arrIpElements = explode( ".", $strIp );
+        $boolIpValid = count($arrIpElements) === 4;
+        foreach ($arrIpElements as $ip) {
+            if (!is_numeric($ip) || $ip < 0 || $ip > 255) {
+                $boolIpValid = false;
+            }
+        }
+        if (!$boolIpValid) {
+            echo ("Adresse IP invalide.");
+        }else{
+            // Determine OS and execute the ping command.
+            if( stristr( php_uname( 's' ), 'Windows NT' ) ) {
+                // Windows
+                $cmd = shell_exec( 'ping  ' . $strIp );
+            }
+            else {
+                // *nix
+                $cmd = shell_exec( 'ping  -c 4 ' . $strIp );
+            }
+
+            // Feedback for the end user
+            echo "<pre>".$cmd."</pre>";
+        }
 	}
 	
 	include ("_partial/soluce.php"); 	
