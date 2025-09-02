@@ -26,4 +26,3 @@
     } catch(PDOException $e) {
         echo "Échec : " . $e->getMessage();
     }
-?>

@@ -49,7 +49,7 @@ class EnvParser {
         $value = str_replace(['\\n', '\\r', '\\t'], ["\n", "\r", "\t"], $value);
 
         // Substitution de variables ${VAR_NAME}
-        $value = preg_replace_callback('/\$\{([A-Z_][A-Z0-9_]*)\}/', function($matches) {
+        $value = preg_replace_callback('/\$\{([A-Z_][A-Z0-9_]*)}/', function($matches) {
             return getenv($matches[1]) ?: '';
         }, $value);
 
