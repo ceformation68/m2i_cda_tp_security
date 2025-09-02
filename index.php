@@ -1,4 +1,7 @@
 <?php
+    // Charger la configuration
+    require_once('config/config.php');
+
 	$strPage = $_GET['page']??'content';
 	if (!file_exists("pages/".$strPage.".php")){
 		header("Location:index.php");
