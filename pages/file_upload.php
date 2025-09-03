@@ -13,15 +13,50 @@
 	<?php
 		include("_partial/desc.php");
 		if (count($_FILES) >0){
-			$uploaddir = './uploads/';
-			$uploadfile = $uploaddir . basename($_FILES['myFile']['name']);
-			if (move_uploaded_file($_FILES['myFile']['tmp_name'], $uploadfile)) {
-				echo "Le fichier a bien été uploadé";
-			} else {
-				echo "Erreur d'upload du fichier";
-			}
+            // Vérification de l'image
+            $arrMyfile = $_FILES['myFile'];
+
+            if($arrMyfile['error'] > 0){
+                $strError = "Erreur lors du transfert";
+            }else{
+                // Vérifier la taille du fichier (max 500Ko)
+                if ($arrMyfile['size'] > 500000) {
+                    $strError = "Le fichier est trop gros (max 500Ko)";
+                }else{
+                    $allowedTypes   = ['image/jpeg', 'image/png'];
+                    $fileType       = $arrMyfile['type'];
+                    // Vérifier le type MIME
+                    if (!in_array($fileType, $allowedTypes)) {
+                        $strError = "Type de fichier non autorisé. Seuls les fichiers JPEG, PNG sont autorisés.";
+                    }else{
+                        // Renommer le fichier avec la date et un id unique
+                        $objDate = new DateTime();
+                        $newFileName = $objDate->format('Ymd_His_') . uniqid() . '.' . pathinfo($arrMyfile['name'], PATHINFO_EXTENSION);
+                        $uploaddir = './uploads/';
+                        $uploadfile = $uploaddir . $newFileName;
+                        // Déplacer le fichier dans le dossier uploads - sans redimensionnement
+                        /*if (move_uploaded_file($arrMyfile['tmp_name'], $uploadfile)) {
+                            $strMessage = "Le fichier a bien été uploadé";
+                        } else {
+                            $strError = "Erreur d'upload du fichier";
+                        }*/
+                        // Redimensionner l'image en gardant le ratio + enregistrement dans le dossier uploads
+                        $imgSrc = imagecreatefromjpeg($arrMyfile['tmp_name']);
+                        $imgSrc = imagescale($imgSrc, 100, -1); // Largeur max 100px
+                        imagejpeg($imgSrc, $uploadfile);
+                    }
+                }
+            }
 		}
 	?>
+    <?php
+        if (isset($strError)){
+            echo '<div class="alert alert-danger" role="alert">'.$strError.'</div>';
+        }
+        if (isset($strMessage)){
+            echo '<div class="alert alert-success" role="alert">'.$strMessage.'</div>';
+        }
+    ?>
 	<form enctype="multipart/form-data" action="index.php?page=file_upload" method="POST">
 		<p>
 			<input class="form-control" type="file" name="myFile">
