@@ -22,6 +22,17 @@
 		if (isset($_POST['password_new'])){
 			if ($_POST['password_new'] == ''){
                 $strError = "Vous devez renseigner un mot de passe";
+            }else if (!preg_match("/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{16,}$/", $_POST['password_new'])){
+                $strError = "Le mot de passe doit contenir :
+                <ul>
+                    <li>Au moins 16 caractères</li>
+                    <li>Au moins une lettre majuscule</li>
+                    <li>Au moins une lettre minuscule</li>
+                    <li>Au moins un chiffre</li>
+                    <li>Au moins un caractère spécial</li>
+                </ul>";
+            }else if ($_POST['password_old'] == ''){
+                $strError = "Vous devez renseigner votre mot de passe actuel";
 			}else if ($_POST['password_new'] != $_POST['password_conf']){
                 $strError = "Le mot de passe et sa confirmation ne correspondent pas";
 			}else{
@@ -46,6 +57,7 @@
                         $stmt->execute();
                         // Message pour l'utilisateur
                         $strMessage = "Mot de passe changé avec succès !";
+                        unset($_SESSION['csrf_token']); // Invalider le token après utilisation
                     }
                 }
                 if (!$boolOk){
@@ -70,6 +82,7 @@
         <p>
             <label for="pass">Nouveau mot de passe :</label>
             <input id="pass" class="form-control" type="password" name="password_new">
+            <span class="small">Au moins : 16 caractères, une lettre majuscule, une lettre minuscule, un chiffre, un caractère spécial</span>
         </p>
 		<p>
 			<label for="passconf">Confirmer le mot de passe :</label>

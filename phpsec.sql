@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1:3306
--- Généré le : lun. 01 sep. 2025 à 06:52
+-- Généré le : mer. 03 sep. 2025 à 08:53
 -- Version du serveur : 8.0.31
 -- Version de PHP : 8.3.8
 
@@ -24,6 +24,20 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `blacklist`
+--
+
+DROP TABLE IF EXISTS `blacklist`;
+CREATE TABLE IF NOT EXISTS `blacklist` (
+  `blacklist_ip_address` varchar(50) NOT NULL,
+  `blacklist_block_reason` varchar(255) NOT NULL,
+  `blacklist_block_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`blacklist_ip_address`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `comments`
 --
 
@@ -34,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `comments` (
   `comment` text NOT NULL,
   `publish` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb3;
 
 --
 -- Déchargement des données de la table `comments`
@@ -42,6 +56,22 @@ CREATE TABLE IF NOT EXISTS `comments` (
 
 INSERT INTO `comments` (`id`, `name`, `comment`, `publish`) VALUES
 (1, 'Christel', 'Mon premier commentaire', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `login_attempts`
+--
+
+DROP TABLE IF EXISTS `login_attempts`;
+CREATE TABLE IF NOT EXISTS `login_attempts` (
+  `attempt_id` int NOT NULL AUTO_INCREMENT,
+  `attempt_username` varchar(255) NOT NULL,
+  `attempt_login_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `attempt_ip` varchar(45) NOT NULL,
+  `attempt_login_success` tinyint(1) NOT NULL,
+  PRIMARY KEY (`attempt_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -63,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 --
 
 INSERT INTO `users` (`id`, `login`, `password`, `name`) VALUES
-(1, 'admin', 'password', 'Christel'),
+(1, 'admin', '$2y$10$NgyZ486C9.oSE7xWmQnC5OEwG3/ZXh85NAfmhE/55G3PpihIyBcKy', 'Christel'),
 (2, 'toto', 'camion', 'Seb');
 COMMIT;
 
