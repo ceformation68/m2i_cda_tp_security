@@ -1,6 +1,16 @@
 <?php 
 	include("connect.php");
 
+    // Vérification si l'ip est en blacklist
+    $stmt = $db->prepare("SELECT blacklist_ip_address
+                                    FROM blacklist 
+                                    WHERE blacklist_ip_address = :ip");
+    $stmt->bindParam(':ip', $_SERVER['REMOTE_ADDR']);
+    $stmt->execute();
+    if ($stmt->fetchColumn() > 0) {
+        echo '<div class="alert alert-danger" role="alert">Votre adresse IP est bloquée en raison de trop nombreuses tentatives de connexion échouées. Veuillez contacter un administrateur.</div>';
+        return;
+    }
     // Recherche du nombre de connexions échouées en fonction de l'adresse ip
     $intFailedAttempts = $db->query("SELECT COUNT(*) AS fail_count FROM login_attempts WHERE attempt_ip = '".$_SERVER['REMOTE_ADDR']."' AND attempt_login_success = 0 AND attempt_login_time > (NOW() - INTERVAL 15 MINUTE);")->fetchColumn();
     // Si 5 tentatives ou plus, bloquer la connexion
